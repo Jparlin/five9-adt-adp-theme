@@ -1,840 +1,345 @@
 /* ============================================================================
-   Five9 ADT → ADP Theme CSS (NEW ADT DOM)
+   Five9 ADT → ADP Theme CSS — SAFE MODE
 
-   This stylesheet transforms the NEW Agent Desktop Toolkit (ADT) to visually
-   match Agent Desktop Plus (ADP). Designed for the updated ADT with completely
-   different DOM structure including:
-   - Flex-based layout with sfli-agent-container
-   - Header (sfli-panel-header) with agent details and state combobox
-   - Two-column main layout (main + stats panel)
-   - Footer (sfli-panel-footer) with station/connectivity status
-
-   Organization:
-   1. Custom Properties (CSS Variables) & Fonts
-   2. Global & Body Styles
-   3. Header (sfli-panel-header)
-   4. Agent Details & Profile
-   5. Ready State Button (Agent State Combobox)
-   6. Main Content (Left Column)
-   7. Stats Panel (Right Column)
-   8. Buttons & Controls
-   9. Footer (sfli-panel-footer)
-   10. Utility Classes & Responsive
-   ============================================================================ */
-
-/* ============================================================================
-   SECTION 1: CUSTOM PROPERTIES & GOOGLE FONTS
+   RULES:
+   1. Every selector MUST be highly specific (ID or multi-class chain)
+   2. NEVER override Five9's layout classes (.sfli-flexbox, .sfli-flexible, etc.)
+   3. NEVER style html, body, *, a, button generically
+   4. NEVER use overflow:hidden anywhere
+   5. NEVER override display, flex, width, height on layout containers
+   6. ONLY change: color, background-color, border-color, font-family,
+      font-size, border-radius, box-shadow, text styling
+   7. Use !important sparingly — only where Five9's own !important must be beaten
    ============================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
+/* ============================================================================
+   SECTION 1: CSS CUSTOM PROPERTIES (safe — just defines variables)
+   ============================================================================ */
+
 :root {
-  /* Typography System */
-  --font-family-primary: "Roboto", "Calibri", "Arial", "Helvetica", sans-serif;
-  --font-size-base: 13px;
-  --font-size-sm: 12px;
-  --font-size-xs: 11px;
-  --font-size-lg: 14px;
-  --font-size-xl: 16px;
-  --font-size-xxl: 24px;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold: 700;
-  --line-height-normal: 1.5;
-  --line-height-tight: 1.3;
+  /* Typography */
+  --adp-font: "Roboto", "Calibri", "Arial", "Helvetica", sans-serif;
+  --adp-fs-xs: 11px;
+  --adp-fs-sm: 12px;
+  --adp-fs-base: 13px;
+  --adp-fs-lg: 14px;
+  --adp-fs-xl: 16px;
 
-  /* Primary Brand Colors */
-  --color-navy-dark: rgb(0, 59, 93);         /* Primary dark navy */
-  --color-teal: rgb(35, 124, 169);           /* Secondary teal/cyan accent */
-  --color-teal-dark: rgb(30, 110, 150);      /* Teal hover state */
+  /* Primary Brand */
+  --adp-navy: rgb(0, 59, 93);
+  --adp-teal: rgb(35, 124, 169);
+  --adp-teal-dark: rgb(30, 110, 150);
+  --adp-red: rgb(196, 15, 60);
+  --adp-red-dark: rgb(176, 10, 52);
+  --adp-green: rgb(80, 125, 44);
 
-  /* Alert & Status Colors */
-  --color-red-danger: rgb(196, 15, 60);      /* Danger/alert red for "Not Ready" */
-  --color-red-dark: rgb(176, 10, 52);        /* Red hover state */
-  --color-green-success: rgb(80, 125, 44);   /* Success green */
+  /* Neutrals */
+  --adp-white: rgb(255, 255, 255);
+  --adp-gray-50: rgb(250, 249, 245);
+  --adp-gray-100: rgb(242, 242, 242);
+  --adp-gray-200: rgb(236, 237, 238);
+  --adp-gray-300: rgb(232, 232, 232);
+  --adp-gray-400: rgb(208, 211, 212);
 
-  /* Neutral Grays - ADP Palette */
-  --color-white: rgb(255, 255, 255);
-  --color-gray-50: rgb(250, 249, 245);       /* Very light background */
-  --color-gray-100: rgb(242, 242, 242);      /* Light sidebar bg */
-  --color-gray-200: rgb(236, 237, 238);      /* Main content bg */
-  --color-gray-300: rgb(232, 232, 232);      /* Light borders */
-  --color-gray-400: rgb(208, 211, 212);      /* Medium borders */
-  --color-gray-500: rgb(229, 229, 229);      /* Slightly darker border */
+  /* Text */
+  --adp-text: rgb(46, 52, 56);
+  --adp-text-secondary: rgb(91, 103, 112);
+  --adp-text-muted: rgb(124, 134, 141);
 
-  /* Text Colors */
-  --color-text-primary: rgb(46, 52, 56);     /* Primary text */
-  --color-text-secondary: rgb(91, 103, 112); /* Secondary text */
-  --color-text-muted: rgb(124, 134, 141);    /* Muted text */
-  --color-text-light: rgb(205, 206, 207);    /* Light text (nav inactive) */
-
-  /* Header Specific */
-  --color-header-bg: rgb(246, 248, 253);     /* Header background */
-  --color-header-text: rgb(0, 59, 93);       /* Header text color */
-
-  /* Navigation & Container */
-  --color-nav-bg: rgb(34, 40, 45);           /* Dark nav background (if used) */
-  --color-nav-active: rgb(35, 124, 169);     /* Active nav highlight */
-
-  /* Spacing Scale */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 20px;
-  --spacing-xxl: 24px;
-
-  /* Border Radius */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-pill: 20px;
-
-  /* Shadows */
-  --shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
-
-  /* Layout Dimensions */
-  --header-height: 60px;
-  --footer-height: 40px;
-  --sidebar-width: 286px;
+  /* Header */
+  --adp-header-bg: rgb(246, 248, 253);
 }
 
 /* ============================================================================
-   SECTION 2: GLOBAL & BODY STYLES
+   SECTION 2: HEADER — nav#sfli-home-panel-header
+   Only cosmetic: background, border, font
    ============================================================================ */
 
-/* Scoped box-sizing to ADT container only */
-.sfli-agent-container *,
-.sfli-agent-container *::before,
-.sfli-agent-container *::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  font-family: var(--font-family-primary) !important;
-  font-size: var(--font-size-base) !important;
-  color: var(--color-text-primary) !important;
-  background-color: var(--color-gray-200) !important;
-  line-height: var(--line-height-normal) !important;
-  /* NOTE: Do NOT set overflow:hidden here - it clips dropdowns, modals, and popups */
-}
-
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+nav#sfli-home-panel-header.sfli-panel-header {
+  background-color: var(--adp-header-bg) !important;
+  border-bottom: 1px solid var(--adp-gray-400) !important;
+  font-family: var(--adp-font) !important;
 }
 
 /* ============================================================================
-   SECTION 3: HEADER (sfli-panel-header)
+   SECTION 3: AGENT INFO — inside #agentInfoComp
    ============================================================================ */
 
-.sfli-panel-header {
-  background-color: var(--color-header-bg) !important;
-  color: var(--color-header-text) !important;
-  padding: 0 var(--spacing-md) !important;
-  height: var(--header-height) !important;
-  border-bottom: 1px solid var(--color-gray-400) !important;
-  flex-shrink: 0 !important;
+/* Agent name */
+#agentInfoComp .agentName {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-lg) !important;
+  font-weight: 500 !important;
+  color: var(--adp-navy) !important;
 }
 
-/* Header flex container - arranges logo, agent info, logout, state */
-.sfli-panel-header .sfli-flexbox.sfli-flexible {
-  height: 100% !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: var(--spacing-lg) !important;
-}
-
-/* Agent profile section (avatar + details) */
-.sfli-panel-header .avatar {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: var(--radius-md) !important;
-  background-color: var(--color-white) !important;
-  border: 1px solid var(--color-gray-400) !important;
-  flex-shrink: 0 !important;
-  object-fit: cover !important;
-}
-
-/* Agent details container */
-.sfli-panel-header .agentDetails {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0 !important;
-  flex: 1 !important;
-  min-width: 0 !important;
-}
-
-/* Agent name heading */
-.sfli-panel-header .agentName {
-  font-size: var(--font-size-lg) !important;
-  font-weight: var(--font-weight-medium) !important;
-  color: var(--color-header-text) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: var(--line-height-tight) !important;
-  white-space: nowrap !important;
-  text-overflow: ellipsis !important;
-}
-
-/* Agent username/ID */
-.sfli-panel-header .agentUser {
-  font-size: var(--font-size-sm) !important;
-  color: var(--color-text-secondary) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  white-space: nowrap !important;
-  text-overflow: ellipsis !important;
+/* Agent username */
+#agentInfoComp .agentUser {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-sm) !important;
+  color: var(--adp-text-secondary) !important;
 }
 
 /* Agent extension */
-.sfli-panel-header .agentExtension {
-  font-size: var(--font-size-sm) !important;
-  color: var(--color-text-secondary) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  white-space: nowrap !important;
-}
-
-/* Logout button in header */
-.sfli-panel-header .btn-icon[aria-label*="Log"] {
-  width: 32px !important;
-  height: 32px !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background-color: transparent !important;
-  color: var(--color-header-text) !important;
-  border: none !important;
-  border-radius: var(--radius-sm) !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  flex-shrink: 0 !important;
-}
-
-.sfli-panel-header .btn-icon[aria-label*="Log"]:hover {
-  background-color: rgba(0, 59, 93, 0.1) !important;
-  color: var(--color-navy-dark) !important;
+#agentInfoComp .agentExtension {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-sm) !important;
+  color: var(--adp-text-secondary) !important;
 }
 
 /* ============================================================================
-   SECTION 4: AGENT READY STATE BUTTON
+   SECTION 4: READY STATE BADGE — .sfli-ready-states .btn.combobox
    ============================================================================ */
 
-/* Ready states container */
-.sfli-ready-states {
-  display: flex !important;
-  align-items: center !important;
-  gap: var(--spacing-sm) !important;
-  flex-shrink: 0 !important;
-}
-
-/* The state combobox button */
+/* The combobox button itself */
 .sfli-ready-states .btn.combobox {
-  min-width: 120px !important;
-  padding: 8px 16px !important;
-  height: 36px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-family: var(--font-family-primary) !important;
-  font-size: var(--font-size-base) !important;
-  font-weight: var(--font-weight-medium) !important;
-  border-radius: var(--radius-pill) !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  font-weight: 500 !important;
+  border-radius: 20px !important;
   border: none !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  white-space: nowrap !important;
-  text-overflow: ellipsis !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-/* "Not Ready" state - red pill badge */
+/* Not Ready — red */
 .sfli-ready-states .btn.btn-danger.combobox {
-  background-color: var(--color-red-danger) !important;
-  color: var(--color-white) !important;
-  border: none !important;
+  background-color: var(--adp-red) !important;
+  color: var(--adp-white) !important;
 }
 
 .sfli-ready-states .btn.btn-danger.combobox:hover {
-  background-color: var(--color-red-dark) !important;
-  box-shadow: var(--shadow-md) !important;
+  background-color: var(--adp-red-dark) !important;
 }
 
-.sfli-ready-states .btn.btn-danger.combobox:active {
-  background-color: rgb(156, 8, 46) !important;
-}
-
-/* "Ready" state - teal pill badge */
+/* Ready — teal */
 .sfli-ready-states .btn.btn-primary.combobox {
-  background-color: var(--color-teal) !important;
-  color: var(--color-white) !important;
-  border: none !important;
+  background-color: var(--adp-teal) !important;
+  color: var(--adp-white) !important;
 }
 
 .sfli-ready-states .btn.btn-primary.combobox:hover {
-  background-color: var(--color-teal-dark) !important;
-  box-shadow: var(--shadow-md) !important;
+  background-color: var(--adp-teal-dark) !important;
 }
 
-/* Dropdown arrow/caret in state button */
-.sfli-ready-states .btn.combobox::after {
-  content: " ▼" !important;
-  font-size: 8px !important;
-  margin-left: 4px !important;
-}
-
-/* ============================================================================
-   SECTION 5: MAIN CONTENT AREA (LEFT COLUMN)
-   ============================================================================ */
-
-/* Main panel container - holds left sidebar content */
-.sfli-panel-main-container {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 !important;
-  background-color: var(--color-gray-200) !important;
-  /* NOTE: Do NOT set overflow:hidden - it clips Activity, Contact panels */
-}
-
-/* Two-column layout wrapper (main + stats) */
-.sfli-panel-main-container > .sfli-flexbox.sfli-flexible {
-  display: flex !important;
-  flex-direction: row !important;
-  flex: 1 !important;
-  gap: 0 !important;
-  /* NOTE: Do NOT set overflow:hidden - it clips popups and panels */
-}
-
-/* Left column - main content/actions */
-.sfli-panel-main-container main,
-.sfli-panel-main-container [role="main"] {
-  flex: 0 0 auto !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  background-color: var(--color-gray-200) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow-y: auto !important;
-  padding: var(--spacing-md) !important;
-  gap: var(--spacing-md) !important;
+/* Ready state dropdown list */
+.sfli-ready-states .f9-dropdown .f9-dropdown-menu {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  border-radius: 4px !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* ============================================================================
-   SECTION 6: BUTTONS & CONTROLS (IN MAIN CONTENT)
+   SECTION 5: HOME PANEL BUTTONS — targeted by ID
    ============================================================================ */
 
-/* "New Call" button - prominent primary action */
-main > button.btn.btn-block.btn-primary.btn-call-to-action,
-[role="main"] > button.btn.btn-block.btn-primary.btn-call-to-action {
-  background-color: var(--color-teal) !important;
-  color: var(--color-white) !important;
+/* New Call button */
+#sfli-home-new-call.btn.btn-primary.btn-call-to-action {
+  background-color: var(--adp-teal) !important;
+  color: var(--adp-white) !important;
   border: none !important;
-  border-radius: var(--radius-sm) !important;
-  padding: 10px 16px !important;
-  height: 40px !important;
-  font-size: var(--font-size-xl) !important;
-  font-weight: var(--font-weight-medium) !important;
-  font-family: var(--font-family-primary) !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  box-shadow: var(--shadow-sm) !important;
+  border-radius: 4px !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-xl) !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s ease !important;
 }
 
-main > button.btn.btn-block.btn-primary.btn-call-to-action:hover,
-[role="main"] > button.btn.btn-block.btn-primary.btn-call-to-action:hover {
-  background-color: var(--color-teal-dark) !important;
-  box-shadow: var(--shadow-md) !important;
+#sfli-home-new-call.btn.btn-primary.btn-call-to-action:hover {
+  background-color: var(--adp-teal-dark) !important;
 }
 
-main > button.btn.btn-block.btn-primary.btn-call-to-action:active,
-[role="main"] > button.btn.btn-block.btn-primary.btn-call-to-action:active {
-  transform: translateY(1px) !important;
+/* Secondary buttons — Missed Calls, Voicemail, Reminders, Conversations */
+#missed-calls-button.btn.btn-default,
+#voicemails-button.btn.btn-default,
+#callbacks-button.btn.btn-default,
+#internal-messages-button.btn.btn-default {
+  background-color: var(--adp-white) !important;
+  color: var(--adp-teal) !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 4px !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-lg) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
 }
 
-/* Secondary action buttons - Missed Calls, Voicemail, Reminders, Conversations */
-main > button.btn.btn-default,
-[role="main"] > button.btn.btn-default {
-  background-color: var(--color-white) !important;
-  color: var(--color-teal) !important;
-  border: 1px solid var(--color-gray-400) !important;
-  border-radius: var(--radius-sm) !important;
-  padding: 10px 16px !important;
-  height: 42px !important;
-  font-size: var(--font-size-lg) !important;
-  font-weight: var(--font-weight-normal) !important;
-  font-family: var(--font-family-primary) !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+#missed-calls-button.btn.btn-default:hover,
+#voicemails-button.btn.btn-default:hover,
+#callbacks-button.btn.btn-default:hover,
+#internal-messages-button.btn.btn-default:hover {
+  background-color: var(--adp-gray-50) !important;
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-navy) !important;
 }
 
-main > button.btn.btn-default:hover,
-[role="main"] > button.btn.btn-default:hover {
-  background-color: var(--color-gray-50) !important;
-  border-color: var(--color-teal) !important;
-  color: var(--color-navy-dark) !important;
-  box-shadow: var(--shadow-sm) !important;
+/* Add to DNC button */
+#sfli-dnc-btn.btn.btn-default {
+  background-color: var(--adp-white) !important;
+  color: var(--adp-text) !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 4px !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  transition: background-color 0.2s ease !important;
 }
 
-main > button.btn.btn-default:active,
-[role="main"] > button.btn.btn-default:active {
-  background-color: var(--color-gray-100) !important;
+#sfli-dnc-btn.btn.btn-default:hover {
+  background-color: var(--adp-gray-50) !important;
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-teal) !important;
 }
 
-/* Add to DNC button - with top border separation */
-main > button.btn.btn-default[aria-label*="DNC"],
-[role="main"] > button.btn.btn-default[aria-label*="DNC"] {
-  border-top: 2px solid var(--color-gray-300) !important;
-  margin-top: var(--spacing-sm) !important;
-  padding-top: 10px !important;
+/* Settings button */
+#settings-btn.btn.btn-default {
+  background-color: var(--adp-white) !important;
+  color: var(--adp-text) !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 4px !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  transition: background-color 0.2s ease !important;
 }
 
-/* Settings/Help button group */
-main > .btn-group.btn-group-justified,
-[role="main"] > .btn-group.btn-group-justified {
-  display: flex !important;
-  gap: var(--spacing-sm) !important;
-  margin-top: auto !important;
+#settings-btn.btn.btn-default:hover {
+  background-color: var(--adp-gray-50) !important;
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-teal) !important;
 }
 
-main > .btn-group.btn-group-justified > button,
-[role="main"] > .btn-group.btn-group-justified > button {
-  flex: 1 !important;
-  background-color: var(--color-white) !important;
-  color: var(--color-text-primary) !important;
-  border: 1px solid var(--color-gray-400) !important;
-  border-radius: var(--radius-sm) !important;
-  padding: 8px 12px !important;
-  font-size: var(--font-size-base) !important;
-  font-weight: var(--font-weight-normal) !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
+/* Help button */
+#help-btn.btn.btn-default {
+  background-color: var(--adp-white) !important;
+  color: var(--adp-text) !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 4px !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  transition: background-color 0.2s ease !important;
 }
 
-main > .btn-group.btn-group-justified > button:hover,
-[role="main"] > .btn-group.btn-group-justified > button:hover {
-  background-color: var(--color-gray-50) !important;
-  border-color: var(--color-teal) !important;
-  color: var(--color-teal) !important;
-}
-
-/* Icon styling in buttons */
-main button i,
-[role="main"] button i {
-  margin-right: var(--spacing-sm) !important;
-  font-size: var(--font-size-lg) !important;
+#help-btn.btn.btn-default:hover {
+  background-color: var(--adp-gray-50) !important;
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-teal) !important;
 }
 
 /* ============================================================================
-   SECTION 7: STATS PANEL (RIGHT COLUMN)
+   SECTION 6: SIDE MENU BUTTONS — in .menu-list (collapsed side nav)
    ============================================================================ */
 
-/* Stats panel wrapper - right column */
-.sfli-panel-main-container > .sfli-flexbox.sfli-flexible > [role="tablist"],
-.sfli-panel-main-container > .sfli-flexbox.sfli-flexible > aside {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  background-color: var(--color-gray-100) !important;
-  border-left: 1px solid var(--color-gray-400) !important;
-  overflow-y: auto !important;
+#sfli-side-menu_home-btn.btn.btn-link,
+#sfli-side-menu_newCall-btn.btn.btn-link,
+#sfli-side-missed-calls-btn.btn.btn-link,
+#sfli-side-menu_voicemails-btn.btn.btn-link,
+#sfli-side-menu_callbacks-btn.btn.btn-link,
+#sfli-side-menu_messages-btn.btn.btn-link {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  color: var(--adp-white) !important;
+  transition: background-color 0.2s ease !important;
 }
 
-/* Tab list (Me / Queue) - scoped to stats panel only */
-.sfli-panel-main-container [role="tablist"] {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  padding: var(--spacing-md) !important;
-  gap: var(--spacing-sm) !important;
-  background-color: var(--color-gray-100) !important;
-  border-bottom: 1px solid var(--color-gray-400) !important;
-  flex-shrink: 0 !important;
-}
-
-/* Individual tab - scoped to stats panel only */
-.sfli-panel-main-container [role="tab"] {
-  padding: 8px 16px !important;
-  background-color: var(--color-white) !important;
-  color: var(--color-text-secondary) !important;
-  border: 1px solid var(--color-gray-400) !important;
-  border-radius: var(--radius-sm) !important;
-  font-family: var(--font-family-primary) !important;
-  font-size: var(--font-size-base) !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-/* Active tab styling - scoped */
-.sfli-panel-main-container [role="tab"][aria-selected="true"] {
-  background-color: var(--color-teal) !important;
-  color: var(--color-white) !important;
-  border-color: var(--color-teal) !important;
-}
-
-.sfli-panel-main-container [role="tab"]:hover {
-  border-color: var(--color-teal) !important;
-}
-
-/* Settings gear icon in tab header - scoped */
-.sfli-panel-main-container [role="tablist"] button.btn-icon {
-  margin-left: auto !important;
-  padding: 4px 8px !important;
-  background-color: transparent !important;
-  color: var(--color-text-secondary) !important;
-  border: none !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-.sfli-panel-main-container [role="tablist"] button.btn-icon:hover {
-  color: var(--color-teal) !important;
-}
-
-/* Tab panel content - scoped */
-.sfli-panel-main-container [role="tabpanel"] {
-  flex: 1 !important;
-  padding: var(--spacing-md) !important;
-  overflow-y: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: var(--spacing-md) !important;
-}
-
-/* Individual stat cell */
-.agent-stats-cell {
-  width: 100% !important;
-  padding: var(--spacing-md) !important;
-  background-color: rgba(0, 59, 93, 0.05) !important;
-  border-radius: var(--radius-sm) !important;
-  border: 1px solid rgba(0, 59, 93, 0.1) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: var(--spacing-xs) !important;
-}
-
-/* Stat value (e.g., "0", "0:00") */
-.agent-stat-value {
-  font-size: var(--font-size-xxl) !important;
-  font-weight: var(--font-weight-bold) !important;
-  color: var(--color-navy-dark) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: var(--line-height-tight) !important;
-}
-
-/* Stat title (e.g., "Calls Answered") */
-.agent-stat-title {
-  font-size: var(--font-size-sm) !important;
-  color: var(--color-text-secondary) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  font-weight: var(--font-weight-normal) !important;
-}
-
-/* Small stats table if present */
-.agent-stats-small-table {
-  width: 100% !important;
-  font-size: var(--font-size-sm) !important;
-  color: var(--color-text-secondary) !important;
-}
-
-.agent-stats-small-table td {
-  padding: 4px 0 !important;
-}
-
-.agent-stats-small-table td:first-child {
-  color: var(--color-text-secondary) !important;
-}
-
-.agent-stats-small-table td:last-child {
-  text-align: right !important;
-  color: var(--color-navy-dark) !important;
-  font-weight: var(--font-weight-medium) !important;
+#sfli-side-menu_home-btn.btn.btn-link:hover,
+#sfli-side-menu_newCall-btn.btn.btn-link:hover,
+#sfli-side-missed-calls-btn.btn.btn-link:hover,
+#sfli-side-menu_voicemails-btn.btn.btn-link:hover,
+#sfli-side-menu_callbacks-btn.btn.btn-link:hover,
+#sfli-side-menu_messages-btn.btn.btn-link:hover {
+  background-color: rgba(35, 124, 169, 0.2) !important;
 }
 
 /* ============================================================================
-   SECTION 8: FOOTER (sfli-panel-footer)
+   SECTION 7: STATS PANEL — Me/Queue tabs and stats table
+   Scoped inside #sfli-home-panel only
    ============================================================================ */
 
-.sfli-panel-footer,
-[role="contentinfo"] {
-  background-color: var(--color-gray-100) !important;
-  border-top: 1px solid var(--color-gray-400) !important;
-  padding: 0 var(--spacing-md) !important;
-  height: var(--footer-height) !important;
-  flex-shrink: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: var(--spacing-lg) !important;
-  font-size: var(--font-size-sm) !important;
-  color: var(--color-text-secondary) !important;
+/* Tab buttons (Me / Queue) */
+#sfli-home-panel [role="tablist"] [role="tab"] {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-base) !important;
+  border-radius: 4px !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
 }
 
-/* Station buttons in footer */
-.sfli-station-buttons {
-  display: flex !important;
-  gap: var(--spacing-sm) !important;
-  align-items: center !important;
-  flex: 1 !important;
+/* Active tab */
+#sfli-home-panel [role="tablist"] [role="tab"][aria-selected="true"] {
+  background-color: var(--adp-teal) !important;
+  color: var(--adp-white) !important;
+  border-color: var(--adp-teal) !important;
 }
 
-.sfli-station-buttons button {
-  width: 24px !important;
-  height: 24px !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background-color: var(--color-white) !important;
-  color: var(--color-text-secondary) !important;
-  border: 1px solid var(--color-gray-400) !important;
-  border-radius: var(--radius-xs) !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  font-size: 12px !important;
+/* Inactive tab */
+#sfli-home-panel [role="tablist"] [role="tab"][aria-selected="false"] {
+  background-color: var(--adp-white) !important;
+  color: var(--adp-text-secondary) !important;
+  border: 1px solid var(--adp-gray-400) !important;
 }
 
-.sfli-station-buttons button:hover {
-  border-color: var(--color-teal) !important;
-  color: var(--color-teal) !important;
+#sfli-home-panel [role="tablist"] [role="tab"]:hover {
+  border-color: var(--adp-teal) !important;
 }
 
-/* Connectivity status bar */
-.connectivity-status-bar {
-  display: flex !important;
-  align-items: center !important;
-  gap: var(--spacing-sm) !important;
-  font-size: var(--font-size-sm) !important;
-  color: var(--color-text-secondary) !important;
-  flex: 0 0 auto !important;
+/* Stats table */
+#sfli-home-panel [role="tabpanel"] table {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-sm) !important;
+  color: var(--adp-text) !important;
 }
 
-.connectivity-status-bar::before {
-  content: "●" !important;
-  color: var(--color-green-success) !important;
-  font-size: 8px !important;
-  display: inline-block !important;
-}
-
-/* Five9 logo in footer */
-.F9logo {
-  width: auto !important;
-  height: 20px !important;
-  flex-shrink: 0 !important;
-  opacity: 0.6 !important;
-}
-
-.F9logo:hover {
-  opacity: 0.8 !important;
+/* Column headers in stats */
+#sfli-home-panel [role="tabpanel"] th button {
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-sm) !important;
+  color: var(--adp-text-secondary) !important;
 }
 
 /* ============================================================================
-   SECTION 9: SCROLLBAR STYLING
+   SECTION 8: FOOTER — [role="contentinfo"]
+   Only cosmetic changes
    ============================================================================ */
 
-/* Webkit scrollbars for main content */
-main::-webkit-scrollbar,
-[role="main"]::-webkit-scrollbar,
-[role="tabpanel"]::-webkit-scrollbar {
-  width: 6px !important;
-}
-
-main::-webkit-scrollbar-track,
-[role="main"]::-webkit-scrollbar-track,
-[role="tabpanel"]::-webkit-scrollbar-track {
-  background-color: transparent !important;
-}
-
-main::-webkit-scrollbar-thumb,
-[role="main"]::-webkit-scrollbar-thumb,
-[role="tabpanel"]::-webkit-scrollbar-thumb {
-  background-color: var(--color-gray-400) !important;
-  border-radius: 3px !important;
-}
-
-main::-webkit-scrollbar-thumb:hover,
-[role="main"]::-webkit-scrollbar-thumb:hover,
-[role="tabpanel"]::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-gray-300) !important;
+#sfli-home-panel-footer[role="contentinfo"],
+.sfli-agent-container [role="contentinfo"] {
+  background-color: var(--adp-gray-100) !important;
+  border-top: 1px solid var(--adp-gray-400) !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-sm) !important;
+  color: var(--adp-text-secondary) !important;
 }
 
 /* ============================================================================
-   SECTION 10: UTILITY CLASSES & TEXT STYLING
+   SECTION 9: MAIN CONTENT AREA — minimal cosmetic only
    ============================================================================ */
 
-/* Text color utilities */
-.text-primary {
-  color: var(--color-text-primary) !important;
+/* Background color for the main panel area */
+#sfli-home-panel .sfli-panel-main-container {
+  background-color: var(--adp-gray-200) !important;
 }
-
-.text-secondary {
-  color: var(--color-text-secondary) !important;
-}
-
-.text-muted {
-  color: var(--color-text-muted) !important;
-}
-
-.text-light {
-  color: var(--color-text-light) !important;
-}
-
-.text-teal {
-  color: var(--color-teal) !important;
-}
-
-.text-navy {
-  color: var(--color-navy-dark) !important;
-}
-
-/* Background utilities */
-.bg-white {
-  background-color: var(--color-white) !important;
-}
-
-.bg-gray-light {
-  background-color: var(--color-gray-100) !important;
-}
-
-.bg-gray-main {
-  background-color: var(--color-gray-200) !important;
-}
-
-.bg-teal {
-  background-color: var(--color-teal) !important;
-}
-
-/* Border utilities */
-.border-gray {
-  border: 1px solid var(--color-gray-400) !important;
-}
-
-.border-light {
-  border: 1px solid var(--color-gray-500) !important;
-}
-
-.border-top {
-  border-top: 1px solid var(--color-gray-400) !important;
-}
-
-/* Spacing utilities */
-.mt-xs { margin-top: var(--spacing-xs) !important; }
-.mt-sm { margin-top: var(--spacing-sm) !important; }
-.mt-md { margin-top: var(--spacing-md) !important; }
-.mt-lg { margin-top: var(--spacing-lg) !important; }
-
-.mb-xs { margin-bottom: var(--spacing-xs) !important; }
-.mb-sm { margin-bottom: var(--spacing-sm) !important; }
-.mb-md { margin-bottom: var(--spacing-md) !important; }
-.mb-lg { margin-bottom: var(--spacing-lg) !important; }
-
-.p-xs { padding: var(--spacing-xs) !important; }
-.p-sm { padding: var(--spacing-sm) !important; }
-.p-md { padding: var(--spacing-md) !important; }
-.p-lg { padding: var(--spacing-lg) !important; }
 
 /* ============================================================================
-   SECTION 11: FLEX LAYOUT UTILITIES
+   SECTION 10: SCROLLBAR STYLING (purely cosmetic, webkit only)
    ============================================================================ */
 
-.sfli-flexbox {
-  display: flex !important;
+#sfli-home-panel ::-webkit-scrollbar {
+  width: 6px;
 }
 
-.sfli-flexbox-row {
-  flex-direction: row !important;
+#sfli-home-panel ::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 
-.sfli-flexbox-col {
-  flex-direction: column !important;
+#sfli-home-panel ::-webkit-scrollbar-thumb {
+  background-color: var(--adp-gray-400);
+  border-radius: 3px;
 }
 
-.sfli-flexible {
-  flex: 1 !important;
-}
-
-.sfli-flex-container {
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-  width: 100% !important;
+#sfli-home-panel ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--adp-text-muted);
 }
 
 /* ============================================================================
-   SECTION 12: LINK & SELECTION STYLES
-   ============================================================================ */
-
-/* Links - scoped to ADT agent container to avoid breaking other panels */
-.sfli-agent-container a,
-.adp-theme .sfli-panel-main-container a {
-  color: var(--color-teal) !important;
-  text-decoration: none !important;
-  transition: color 0.2s ease !important;
-}
-
-.sfli-agent-container a:hover,
-.adp-theme .sfli-panel-main-container a:hover {
-  color: var(--color-navy-dark) !important;
-  text-decoration: underline !important;
-}
-
-/* Text selection styling - scoped */
-.sfli-agent-container ::selection {
-  background-color: var(--color-teal) !important;
-  color: var(--color-white) !important;
-}
-
-.sfli-agent-container ::-moz-selection {
-  background-color: var(--color-teal) !important;
-  color: var(--color-white) !important;
-}
-
-/* ============================================================================
-   SECTION 13: BUTTON BASE RESET
-   ============================================================================ */
-
-/* Button base - scoped to ADT agent container */
-.sfli-agent-container button {
-  font-family: var(--font-family-primary) !important;
-  transition: all 0.2s ease !important;
-}
-
-.sfli-agent-container button:focus {
-  outline: 2px solid var(--color-teal) !important;
-  outline-offset: 2px !important;
-}
-
-/* ============================================================================
-   SECTION 14: CUSTOM COMPONENT PLACEHOLDERS
-   ============================================================================ */
-
-[id^="3rdPartyComp-"],
-.custom-component-placeholder {
-  width: 100% !important;
-  background-color: var(--color-white) !important;
-  border: 1px solid var(--color-gray-400) !important;
-  border-radius: var(--radius-md) !important;
-  margin: var(--spacing-md) 0 !important;
-  padding: var(--spacing-md) !important;
-  font-family: var(--font-family-primary) !important;
-}
-
-/* ============================================================================
-   END OF FIVE9 ADT → ADP THEME CSS (NEW ADT DOM)
+   END OF SAFE MODE CSS
    ============================================================================ */
