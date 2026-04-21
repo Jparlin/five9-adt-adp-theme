@@ -1,29 +1,31 @@
 /**
  * Five9 ADT to ADP Theme Loader (NEW ADT VERSION)
  *
- * AMD Module for Five9's NEW Agent Desktop Toolkit (ADT)
+ * Self-executing module for Five9's NEW Agent Desktop Toolkit (ADT)
  * Loads custom styling and DOM enhancements for modern flex-based layout
  * with sfli- prefixed classes.
  *
- * This module is loaded at ADT startup via the External JS feature.
+ * This script is loaded at ADT startup via the External JS feature.
  * It handles CSS injection, DOM enhancement, dynamic observers, and state tracking.
  *
- * Version: 2.0.0 (NEW ADT)
+ * NOTE: Uses IIFE pattern (not AMD define()) because Five9 loads External JS
+ * via a <script> tag. Using anonymous define() conflicts with Five9's internal
+ * RequireJS, causing "Mismatched anonymous define() module" errors.
+ *
+ * Version: 2.1.0 (NEW ADT - IIFE pattern)
  * Compatible with: ADT 2.x+ (sfli- prefix layout)
  */
 
-define(function() {
+(function() {
   'use strict';
 
   // ============================================================================
   // Configuration & Constants
   // ============================================================================
 
-  const CONFIG = {
-    // CSS path (relative to ADT root)
-    cssPath: '../css/five9-adt-theme.css',
-    // Fallback CDN URL (uncomment and update with actual URL if production use)
-    // cssCdnUrl: 'https://cdn.example.com/five9-adt-theme.css',
+  var CONFIG = {
+    // GitHub Pages hosted CSS URL - update this to your actual GitHub Pages URL
+    cssUrl: 'https://jparlin.github.io/five9-adt-adp-theme/css/five9-adt-theme.css',
     logPrefix: '[ADT-ADP Theme]',
     observerConfig: {
       attributes: true,
@@ -39,27 +41,18 @@ define(function() {
   };
 
   // DOM selectors for NEW ADT elements (sfli- prefixed)
-  const SELECTORS = {
-    // Main container structure
+  var SELECTORS = {
     agentContainer: '.sfli-agent-container.sfli-flex-container',
-    // Header navigation bar (60px)
     panelHeader: 'nav.sfli-panel-header',
-    // Main body container (flex row for two columns)
     mainContainer: '.sfli-panel-main-container',
-    // Left column (main content, calls, menu)
     mainPanel: '[role="main"], main',
-    // Right column (stats panel)
     statsPanel: '[role="tablist"]',
-    // Agent state combobox in header
     readyStatesContainer: '.sfli-ready-states',
     readyStateButton: '.sfli-ready-states .btn',
-    // Footer/info bar
     contentInfo: '[role="contentinfo"]',
     stationButtons: '.sfli-station-buttons',
     connectivityBar: '.connectivity-status-bar',
-    // Custom component placeholders
     customPlaceholders: '.custom-component-placeholder',
-    // Agent info elements
     agentName: '.agentName',
     agentUser: '.agentUser',
     agentExtension: '.agentExtension',
@@ -67,21 +60,20 @@ define(function() {
   };
 
   // CSS marker classes for reliable targeting
-  const CSS_CLASSES = {
-    themeRoot: 'adp-theme',           // body
-    headerMarker: 'adp-header',        // nav.sfli-panel-header
-    mainMarker: 'adp-main',            // [role="main"]
-    statsMarker: 'adp-stats',          // stats panel (sibling of main)
-    footerMarker: 'adp-footer',        // [role="contentinfo"]
-    stateBadgeMarker: 'adp-state-badge', // ready state combobox
-    // Additional state markers for CSS targeting
+  var CSS_CLASSES = {
+    themeRoot: 'adp-theme',
+    headerMarker: 'adp-header',
+    mainMarker: 'adp-main',
+    statsMarker: 'adp-stats',
+    footerMarker: 'adp-footer',
+    stateBadgeMarker: 'adp-state-badge',
     readyState: 'adp-agent-ready',
     notReadyState: 'adp-agent-not-ready',
     unknownState: 'adp-agent-unknown-state'
   };
 
   // State tracking
-  let state = {
+  var state = {
     cssInjected: false,
     initialized: false,
     observers: [],
@@ -92,7 +84,7 @@ define(function() {
   // Logging Utilities
   // ============================================================================
 
-  const Logger = {
+  var Logger = {
     log: function(message, data) {
       console.log(CONFIG.logPrefix + ' ' + message, data || '');
     },
@@ -108,13 +100,8 @@ define(function() {
   // CSS Injection
   // ============================================================================
 
-  /**
-   * Injects the custom CSS stylesheet into the document
-   * Handles both local and CDN paths with fallback mechanism
-   */
   function injectCustomCSS() {
     try {
-      // Check if CSS is already injected
       var existingLink = document.querySelector('link[href*="five9-adt-theme"]');
       if (existingLink) {
         Logger.log('Custom CSS already injected, skipping...');
@@ -122,27 +109,23 @@ define(function() {
         return true;
       }
 
-      // Create and configure link element
       var link = document.createElement('link');
       link.rel = 'stylesheet';
       link.type = 'text/css';
-      link.href = CONFIG.cssPath;
+      link.href = CONFIG.cssUrl;
       link.id = 'five9-adt-theme-css';
 
-      // Add error handler for fallback (if CDN URL is configured)
       link.onerror = function() {
-        Logger.warn('Failed to load primary CSS from ' + CONFIG.cssPath);
+        Logger.warn('Failed to load CSS from ' + CONFIG.cssUrl);
       };
 
       link.onload = function() {
-        Logger.log('Custom CSS loaded successfully from ' + CONFIG.cssPath);
+        Logger.log('Custom CSS loaded successfully from ' + CONFIG.cssUrl);
         state.cssInjected = true;
       };
 
-      // Inject into document head
       document.head.appendChild(link);
-      Logger.log('Custom CSS injected: ' + CONFIG.cssPath);
-
+      Logger.log('Custom CSS injected: ' + CONFIG.cssUrl);
       return true;
     } catch (error) {
       Logger.error('Failed to inject custom CSS', error);
@@ -162,52 +145,42 @@ define(function() {
       if (body) {
         body.classList.add(CSS_CLASSES.themeRoot);
         applyCount.success++;
-        Logger.log('Added "' + CSS_CLASSES.themeRoot + '" to body');
       }
 
       var header = document.querySelector(SELECTORS.panelHeader);
       if (header) {
         header.classList.add(CSS_CLASSES.headerMarker);
         applyCount.success++;
-        Logger.log('Added "' + CSS_CLASSES.headerMarker + '" to ' + SELECTORS.panelHeader);
       } else {
         applyCount.notFound++;
-        Logger.warn('Header not found: ' + SELECTORS.panelHeader);
       }
 
       var mainPanel = document.querySelector(SELECTORS.mainPanel);
       if (mainPanel) {
         mainPanel.classList.add(CSS_CLASSES.mainMarker);
         applyCount.success++;
-        Logger.log('Added "' + CSS_CLASSES.mainMarker + '" to main panel');
       } else {
         applyCount.notFound++;
-        Logger.warn('Main panel not found: ' + SELECTORS.mainPanel);
       }
 
       var statsPanel = document.querySelector(SELECTORS.statsPanel);
       if (statsPanel && statsPanel !== mainPanel) {
         statsPanel.classList.add(CSS_CLASSES.statsMarker);
         applyCount.success++;
-        Logger.log('Added "' + CSS_CLASSES.statsMarker + '" to stats panel');
       } else {
         applyCount.notFound++;
-        Logger.warn('Stats panel not found or is main panel');
       }
 
       var footer = document.querySelector(SELECTORS.contentInfo);
       if (footer) {
         footer.classList.add(CSS_CLASSES.footerMarker);
         applyCount.success++;
-        Logger.log('Added "' + CSS_CLASSES.footerMarker + '" to ' + SELECTORS.contentInfo);
       } else {
         applyCount.notFound++;
-        Logger.warn('Footer not found: ' + SELECTORS.contentInfo);
       }
 
-      Logger.log('Theme marker classes applied. Success: ' + applyCount.success +
+      Logger.log('Theme markers applied. Success: ' + applyCount.success +
         ', Not Found: ' + applyCount.notFound);
-
       return applyCount.success > 0;
     } catch (error) {
       Logger.error('Error applying theme marker classes', error);
@@ -222,20 +195,15 @@ define(function() {
   function setupReadyStateMonitoring() {
     try {
       var readyStatesContainer = document.querySelector(SELECTORS.readyStatesContainer);
-
       if (!readyStatesContainer) {
-        Logger.warn('Ready states container not found: ' + SELECTORS.readyStatesContainer);
         return false;
       }
 
       readyStatesContainer.classList.add(CSS_CLASSES.stateBadgeMarker);
-      Logger.log('Added state badge marker class to ready states container');
 
       var stateButton = readyStatesContainer.querySelector(SELECTORS.readyStateButton) ||
                        readyStatesContainer.querySelector('.btn');
-
       if (!stateButton) {
-        Logger.warn('State button not found within ready states container');
         return false;
       }
 
@@ -252,7 +220,6 @@ define(function() {
       observer.observe(stateButton, CONFIG.observerConfig);
       state.observers.push(observer);
       Logger.log('MutationObserver attached to ready state button');
-
       return true;
     } catch (error) {
       Logger.error('Failed to set up ready state monitoring', error);
@@ -267,10 +234,10 @@ define(function() {
 
       button.classList.remove(CSS_CLASSES.readyState, CSS_CLASSES.notReadyState, CSS_CLASSES.unknownState);
 
-      if (className.includes('btn-danger')) {
+      if (className.indexOf('btn-danger') !== -1) {
         newState = 'not-ready';
         button.classList.add(CSS_CLASSES.notReadyState);
-      } else if (className.includes('btn-primary')) {
+      } else if (className.indexOf('btn-primary') !== -1) {
         newState = 'ready';
         button.classList.add(CSS_CLASSES.readyState);
       } else {
@@ -297,7 +264,6 @@ define(function() {
                          document.body;
 
       if (!mainContainer) {
-        Logger.warn('Could not find main container for dynamic monitor');
         return false;
       }
 
@@ -308,23 +274,15 @@ define(function() {
               if (node.nodeType === Node.ELEMENT_NODE) {
                 if (node.matches && node.matches(SELECTORS.mainPanel)) {
                   node.classList.add(CSS_CLASSES.mainMarker);
-                  Logger.log('Applied main marker to dynamically loaded panel');
                 }
                 if (node.matches && node.matches(SELECTORS.statsPanel)) {
                   node.classList.add(CSS_CLASSES.statsMarker);
-                  Logger.log('Applied stats marker to dynamically loaded panel');
                 }
                 if (node.querySelectorAll) {
                   var mainChild = node.querySelector(SELECTORS.mainPanel);
-                  if (mainChild) {
-                    mainChild.classList.add(CSS_CLASSES.mainMarker);
-                    Logger.log('Applied main marker to nested panel');
-                  }
+                  if (mainChild) mainChild.classList.add(CSS_CLASSES.mainMarker);
                   var statsChild = node.querySelector(SELECTORS.statsPanel);
-                  if (statsChild) {
-                    statsChild.classList.add(CSS_CLASSES.statsMarker);
-                    Logger.log('Applied stats marker to nested panel');
-                  }
+                  if (statsChild) statsChild.classList.add(CSS_CLASSES.statsMarker);
                 }
               }
             });
@@ -354,15 +312,10 @@ define(function() {
   function enhanceConnectivityDisplay() {
     try {
       var connectivityBar = document.querySelector(SELECTORS.connectivityBar);
-      if (!connectivityBar) {
-        Logger.warn('Connectivity bar not found for enhancement');
-        return false;
-      }
+      if (!connectivityBar) return false;
       connectivityBar.classList.add('adp-connectivity-enhanced');
-      Logger.log('Connectivity display enhanced');
       return true;
     } catch (error) {
-      Logger.warn('Could not enhance connectivity display', error);
       return false;
     }
   }
@@ -370,15 +323,10 @@ define(function() {
   function enhanceStationButtons() {
     try {
       var stationButtons = document.querySelector(SELECTORS.stationButtons);
-      if (!stationButtons) {
-        Logger.warn('Station buttons not found for enhancement');
-        return false;
-      }
+      if (!stationButtons) return false;
       stationButtons.classList.add('adp-station-buttons-enhanced');
-      Logger.log('Station buttons enhanced');
       return true;
     } catch (error) {
-      Logger.warn('Could not enhance station buttons', error);
       return false;
     }
   }
@@ -389,34 +337,18 @@ define(function() {
       var agentUser = document.querySelector(SELECTORS.agentUser);
       var agentExt = document.querySelector(SELECTORS.agentExtension);
       var agentAvatar = document.querySelector(SELECTORS.agentAvatar);
-
       var enhancedCount = 0;
-
-      if (agentName) {
-        agentName.classList.add('adp-agent-name');
-        enhancedCount++;
-      }
-      if (agentUser) {
-        agentUser.classList.add('adp-agent-user');
-        enhancedCount++;
-      }
-      if (agentExt) {
-        agentExt.classList.add('adp-agent-extension');
-        enhancedCount++;
-      }
-      if (agentAvatar) {
-        agentAvatar.classList.add('adp-agent-avatar');
-        enhancedCount++;
-      }
+      if (agentName) { agentName.classList.add('adp-agent-name'); enhancedCount++; }
+      if (agentUser) { agentUser.classList.add('adp-agent-user'); enhancedCount++; }
+      if (agentExt) { agentExt.classList.add('adp-agent-extension'); enhancedCount++; }
+      if (agentAvatar) { agentAvatar.classList.add('adp-agent-avatar'); enhancedCount++; }
 
       if (enhancedCount > 0) {
         Logger.log('Agent info display enhanced (' + enhancedCount + ' elements)');
         return true;
       }
-
       return false;
     } catch (error) {
-      Logger.warn('Could not enhance agent info display', error);
       return false;
     }
   }
@@ -431,7 +363,6 @@ define(function() {
         observer.disconnect();
       });
       state.observers = [];
-      Logger.log('All observers disconnected');
     } catch (error) {
       Logger.warn('Error disconnecting observers', error);
     }
@@ -449,25 +380,19 @@ define(function() {
     function attempt(retriesLeft) {
       try {
         var success = initFn();
-
         if (success) {
           Logger.log(functionName + ' succeeded');
           return;
         }
-
         if (retriesLeft > 0) {
-          setTimeout(function() {
-            attempt(retriesLeft - 1);
-          }, delayMs);
+          setTimeout(function() { attempt(retriesLeft - 1); }, delayMs);
         } else {
           Logger.warn(functionName + ' failed after ' + maxRetries + ' attempts');
         }
       } catch (error) {
         Logger.error(functionName + ' threw error on attempt', error);
         if (retriesLeft > 0) {
-          setTimeout(function() {
-            attempt(retriesLeft - 1);
-          }, delayMs);
+          setTimeout(function() { attempt(retriesLeft - 1); }, delayMs);
         }
       }
     }
@@ -475,21 +400,23 @@ define(function() {
     attempt(maxRetries);
   }
 
-  function initialize(params) {
+  function initialize() {
     if (state.initialized) {
       Logger.warn('Already initialized, skipping...');
       return;
     }
 
     Logger.log('Initializing ADT ADP Theme Loader (NEW ADT version)...');
-    Logger.log('Parameters: ', params || {});
 
+    // Step 1: Inject custom CSS (critical path)
     if (!injectCustomCSS()) {
       Logger.error('Failed to inject CSS - theme may not display correctly');
     }
 
+    // Step 2: Apply theme marker classes immediately
     applyThemeMarkerClasses();
 
+    // Step 3: Set up ready state monitoring with retry
     executeWithRetry(
       setupReadyStateMonitoring,
       3,
@@ -497,16 +424,19 @@ define(function() {
       'Ready state monitoring setup'
     );
 
+    // Step 4: Set up dynamic panel monitor (with delay for DOM)
     setTimeout(function() {
       setupDynamicPanelMonitor();
     }, CONFIG.delayMs.initialCheck);
 
+    // Step 5: Optional enhancements (non-critical)
     setTimeout(function() {
       enhanceConnectivityDisplay();
       enhanceStationButtons();
       enhanceAgentInfoDisplay();
     }, CONFIG.delayMs.initialCheck);
 
+    // Step 6: Re-apply marker classes after delay for late-loading elements
     setTimeout(function() {
       applyThemeMarkerClasses();
       Logger.log('Re-applied theme marker classes for late-loading elements');
@@ -517,33 +447,25 @@ define(function() {
   }
 
   // ============================================================================
-  // Module Export (AMD Pattern)
+  // Public API (exposed on window for debugging)
   // ============================================================================
 
-  return {
-    init: function(params) {
-      initialize(params || {});
-    },
-
+  window.AdtAdpTheme = {
     reinitialize: function() {
       Logger.log('Manual re-initialization triggered');
       disconnectObservers();
       state.initialized = false;
-      initialize({});
+      initialize();
     },
-
     isActive: function() {
       return document.body.classList.contains(CSS_CLASSES.themeRoot);
     },
-
     getConfig: function() {
       return CONFIG;
     },
-
     getState: function() {
       return state;
     },
-
     destroy: function() {
       try {
         disconnectObservers();
@@ -555,4 +477,16 @@ define(function() {
       }
     }
   };
-});
+
+  // ============================================================================
+  // Auto-initialize when DOM is ready
+  // ============================================================================
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+  } else {
+    // DOM already loaded, initialize after a brief delay to let ADT finish rendering
+    setTimeout(initialize, CONFIG.delayMs.initialCheck);
+  }
+
+})();
