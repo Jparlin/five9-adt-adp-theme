@@ -343,3 +343,51 @@ nav#sfli-home-panel-header.sfli-panel-header {
 /* ============================================================================
    END OF SAFE MODE CSS
    ============================================================================ */
+
+
+/* ============================================================================
+   SECTION 11: CUSTOM INJECTED BUTTONS (Phase 3)
+   Buttons injected by five9-adt-loader.js, wired to Five9.vent navigation
+   ============================================================================ */
+
+/* Custom button group container */
+#adp-custom-buttons.btn-group-vertical {
+  margin-top: 4px !important;
+  border-top: 2px solid var(--adp-teal) !important;
+  padding-top: 4px !important;
+}
+
+/* Individual custom buttons */
+button.adp-custom-btn.btn.btn-default {
+  background-color: var(--adp-white) !important;
+  color: var(--adp-navy) !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 4px !important;
+  font-family: var(--adp-font) !important;
+  font-size: var(--adp-fs-lg) !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+
+button.adp-custom-btn.btn.btn-default:hover {
+  background-color: var(--adp-gray-50) !important;
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-teal) !important;
+}
+
+/* Icon styling inside custom buttons */
+button.adp-custom-btn .fa {
+  margin-right: 8px !important;
+  font-size: 14px !important;
+  color: var(--adp-teal) !important;
+  width: 18px !important;
+  text-align: center !important;
+}
+
+button.adp-custom-btn:hover .fa {
+  color: var(--adp-navy) !important;
+}
+
+/* ============================================================================
+   END OF FIVE9 ADT → ADP THEME CSS
+   ============================================================================ */
