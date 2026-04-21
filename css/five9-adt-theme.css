@@ -389,5 +389,342 @@ button.adp-custom-btn:hover .fa {
 }
 
 /* ============================================================================
+   SECTION 9: INTERACTION HISTORY MODAL (Phase 4)
+   Full-screen overlay with slide-in panel for call history and contact search
+   ============================================================================ */
+
+/* Modal container — covers entire viewport */
+#adp-history-modal.adp-history-modal {
+  display: none;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 99990 !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  font-family: var(--adp-font) !important;
+}
+
+/* Semi-transparent backdrop */
+#adp-history-modal .adp-history-backdrop {
+  position: absolute !important;
+  top: 0 !important; left: 0 !important;
+  right: 0 !important; bottom: 0 !important;
+  background: rgba(0, 30, 50, 0.45) !important;
+  opacity: 0;
+  transition: opacity 0.25s ease !important;
+}
+
+#adp-history-modal.adp-history-visible .adp-history-backdrop {
+  opacity: 1;
+}
+
+/* Slide-in panel from right */
+#adp-history-modal .adp-history-panel {
+  position: relative !important;
+  width: 520px !important;
+  max-width: 90vw !important;
+  height: 100% !important;
+  background: var(--adp-white) !important;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transform: translateX(100%);
+  transition: transform 0.25s ease !important;
+  z-index: 1 !important;
+}
+
+#adp-history-modal.adp-history-visible .adp-history-panel {
+  transform: translateX(0);
+}
+
+/* Header bar */
+#adp-history-modal .adp-history-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 16px !important;
+  background: var(--adp-navy) !important;
+  color: var(--adp-white) !important;
+  flex-shrink: 0 !important;
+}
+
+#adp-history-modal .adp-history-title {
+  font-size: var(--adp-fs-xl) !important;
+  font-weight: 500 !important;
+}
+
+#adp-history-modal .adp-history-close {
+  background: none !important;
+  border: none !important;
+  color: var(--adp-white) !important;
+  font-size: 22px !important;
+  cursor: pointer !important;
+  padding: 0 4px !important;
+  line-height: 1 !important;
+  opacity: 0.8;
+}
+
+#adp-history-modal .adp-history-close:hover {
+  opacity: 1;
+}
+
+/* Toolbar (filters / search) */
+#adp-history-modal .adp-history-toolbar {
+  padding: 8px 16px !important;
+  background: var(--adp-gray-100) !important;
+  border-bottom: 1px solid var(--adp-gray-300) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Date filter buttons */
+#adp-history-modal .adp-history-filters {
+  display: flex !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+#adp-history-modal .adp-filter-btn {
+  padding: 5px 12px !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 3px !important;
+  background: var(--adp-white) !important;
+  color: var(--adp-text) !important;
+  font-size: var(--adp-fs-sm) !important;
+  font-family: var(--adp-font) !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+#adp-history-modal .adp-filter-btn:hover {
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-teal) !important;
+}
+
+#adp-history-modal .adp-filter-btn.adp-filter-active {
+  background: var(--adp-teal) !important;
+  color: var(--adp-white) !important;
+  border-color: var(--adp-teal) !important;
+}
+
+/* Search input */
+#adp-history-modal .adp-history-search {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+#adp-history-modal .adp-search-input-wrap {
+  position: relative !important;
+  flex: 1 !important;
+}
+
+#adp-history-modal .adp-search-input-wrap .fa {
+  position: absolute !important;
+  left: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: var(--adp-text-muted) !important;
+  font-size: 13px !important;
+}
+
+#adp-history-modal #adp-contact-search-input {
+  width: 100% !important;
+  padding: 7px 10px 7px 30px !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 3px !important;
+  font-size: var(--adp-fs-base) !important;
+  font-family: var(--adp-font) !important;
+  color: var(--adp-text) !important;
+  outline: none !important;
+}
+
+#adp-history-modal #adp-contact-search-input:focus {
+  border-color: var(--adp-teal) !important;
+  box-shadow: 0 0 0 2px rgba(35, 124, 169, 0.15) !important;
+}
+
+#adp-history-modal .adp-search-btn {
+  padding: 7px 14px !important;
+  background: var(--adp-teal) !important;
+  color: var(--adp-white) !important;
+  border: 1px solid var(--adp-teal) !important;
+  border-radius: 3px !important;
+  font-size: var(--adp-fs-sm) !important;
+  cursor: pointer !important;
+}
+
+#adp-history-modal .adp-search-btn:hover {
+  background: var(--adp-teal-dark) !important;
+}
+
+/* Scrollable body */
+#adp-history-modal .adp-history-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+}
+
+/* Loading spinner */
+#adp-history-modal .adp-history-loading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 40px 16px !important;
+  color: var(--adp-text-muted) !important;
+  font-size: var(--adp-fs-base) !important;
+}
+
+/* Empty state */
+#adp-history-modal .adp-history-empty {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 40px 24px !important;
+  text-align: center !important;
+  color: var(--adp-text-secondary) !important;
+}
+
+#adp-history-modal .adp-history-empty .fa {
+  color: var(--adp-teal) !important;
+  margin-bottom: 12px !important;
+  opacity: 0.6;
+}
+
+#adp-history-modal .adp-history-empty p {
+  margin: 4px 0 !important;
+  font-size: var(--adp-fs-base) !important;
+  line-height: 1.5 !important;
+}
+
+#adp-history-modal .adp-history-hint {
+  font-size: var(--adp-fs-sm) !important;
+  color: var(--adp-text-muted) !important;
+}
+
+/* Fallback buttons */
+#adp-history-modal .adp-history-fallback-buttons {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+}
+
+#adp-history-modal .adp-fallback-btn {
+  padding: 8px 16px !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 4px !important;
+  background: var(--adp-white) !important;
+  color: var(--adp-navy) !important;
+  font-size: var(--adp-fs-sm) !important;
+  font-family: var(--adp-font) !important;
+  cursor: pointer !important;
+}
+
+#adp-history-modal .adp-fallback-btn:hover {
+  border-color: var(--adp-teal) !important;
+  color: var(--adp-teal) !important;
+}
+
+#adp-history-modal .adp-fallback-btn .fa {
+  margin-right: 6px !important;
+  color: var(--adp-teal) !important;
+}
+
+/* Data table */
+#adp-history-modal .adp-history-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: var(--adp-fs-sm) !important;
+}
+
+#adp-history-modal .adp-history-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  background: var(--adp-gray-100) !important;
+  color: var(--adp-text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: var(--adp-fs-xs) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+  padding: 8px 10px !important;
+  border-bottom: 1px solid var(--adp-gray-300) !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+}
+
+#adp-history-modal .adp-history-table tbody td {
+  padding: 8px 10px !important;
+  border-bottom: 1px solid var(--adp-gray-200) !important;
+  color: var(--adp-text) !important;
+  white-space: nowrap !important;
+}
+
+#adp-history-modal .adp-history-table tbody tr:hover {
+  background: var(--adp-gray-50) !important;
+}
+
+/* Direction indicators */
+#adp-history-modal .adp-dir-inbound {
+  color: var(--adp-green) !important;
+}
+
+#adp-history-modal .adp-dir-outbound {
+  color: var(--adp-teal) !important;
+}
+
+#adp-history-modal .adp-dir-internal {
+  color: var(--adp-text-muted) !important;
+}
+
+/* Action buttons in table */
+#adp-history-modal .adp-action-btn {
+  background: none !important;
+  border: 1px solid var(--adp-gray-400) !important;
+  border-radius: 3px !important;
+  padding: 3px 8px !important;
+  cursor: pointer !important;
+  color: var(--adp-teal) !important;
+  font-size: 12px !important;
+}
+
+#adp-history-modal .adp-action-btn:hover {
+  background: var(--adp-gray-50) !important;
+  border-color: var(--adp-teal) !important;
+}
+
+/* Footer */
+#adp-history-modal .adp-history-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 16px !important;
+  background: var(--adp-gray-100) !important;
+  border-top: 1px solid var(--adp-gray-300) !important;
+  font-size: var(--adp-fs-xs) !important;
+  color: var(--adp-text-muted) !important;
+  flex-shrink: 0 !important;
+}
+
+#adp-history-modal .adp-history-count {
+  font-weight: 500 !important;
+  color: var(--adp-text-secondary) !important;
+}
+
+#adp-history-modal .adp-history-note {
+  font-size: var(--adp-fs-xs) !important;
+}
+
+#adp-history-modal .adp-history-note .fa {
+  margin-right: 4px !important;
+  color: var(--adp-teal) !important;
+}
+
+/* ============================================================================
    END OF FIVE9 ADT → ADP THEME CSS
    ============================================================================ */
