@@ -107,7 +107,10 @@
    SECTION 2: GLOBAL & BODY STYLES
    ============================================================================ */
 
-* {
+/* Scoped box-sizing to ADT container only */
+.sfli-agent-container *,
+.sfli-agent-container *::before,
+.sfli-agent-container *::after {
   box-sizing: border-box;
 }
 
@@ -122,7 +125,7 @@ body {
   color: var(--color-text-primary) !important;
   background-color: var(--color-gray-200) !important;
   line-height: var(--line-height-normal) !important;
-  overflow: hidden !important;
+  /* NOTE: Do NOT set overflow:hidden here - it clips dropdowns, modals, and popups */
 }
 
 body {
@@ -182,7 +185,6 @@ body {
   padding: 0 !important;
   line-height: var(--line-height-tight) !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
@@ -193,7 +195,6 @@ body {
   margin: 0 !important;
   padding: 0 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
@@ -256,7 +257,6 @@ body {
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
@@ -304,8 +304,8 @@ body {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
-  overflow: hidden !important;
   background-color: var(--color-gray-200) !important;
+  /* NOTE: Do NOT set overflow:hidden - it clips Activity, Contact panels */
 }
 
 /* Two-column layout wrapper (main + stats) */
@@ -313,8 +313,8 @@ body {
   display: flex !important;
   flex-direction: row !important;
   flex: 1 !important;
-  overflow: hidden !important;
   gap: 0 !important;
+  /* NOTE: Do NOT set overflow:hidden - it clips popups and panels */
 }
 
 /* Left column - main content/actions */
@@ -327,7 +327,6 @@ body {
   display: flex !important;
   flex-direction: column !important;
   overflow-y: auto !important;
-  overflow-x: hidden !important;
   padding: var(--spacing-md) !important;
   gap: var(--spacing-md) !important;
 }
@@ -453,11 +452,10 @@ main button i,
   background-color: var(--color-gray-100) !important;
   border-left: 1px solid var(--color-gray-400) !important;
   overflow-y: auto !important;
-  overflow-x: hidden !important;
 }
 
-/* Tab list (Me / Queue) */
-[role="tablist"] {
+/* Tab list (Me / Queue) - scoped to stats panel only */
+.sfli-panel-main-container [role="tablist"] {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
@@ -468,8 +466,8 @@ main button i,
   flex-shrink: 0 !important;
 }
 
-/* Individual tab */
-[role="tab"] {
+/* Individual tab - scoped to stats panel only */
+.sfli-panel-main-container [role="tab"] {
   padding: 8px 16px !important;
   background-color: var(--color-white) !important;
   color: var(--color-text-secondary) !important;
@@ -481,19 +479,19 @@ main button i,
   transition: all 0.2s ease !important;
 }
 
-/* Active tab styling */
-[role="tab"][aria-selected="true"] {
+/* Active tab styling - scoped */
+.sfli-panel-main-container [role="tab"][aria-selected="true"] {
   background-color: var(--color-teal) !important;
   color: var(--color-white) !important;
   border-color: var(--color-teal) !important;
 }
 
-[role="tab"]:hover {
+.sfli-panel-main-container [role="tab"]:hover {
   border-color: var(--color-teal) !important;
 }
 
-/* Settings gear icon in tab header */
-[role="tablist"] button.btn-icon {
+/* Settings gear icon in tab header - scoped */
+.sfli-panel-main-container [role="tablist"] button.btn-icon {
   margin-left: auto !important;
   padding: 4px 8px !important;
   background-color: transparent !important;
@@ -503,12 +501,12 @@ main button i,
   transition: all 0.2s ease !important;
 }
 
-[role="tablist"] button.btn-icon:hover {
+.sfli-panel-main-container [role="tablist"] button.btn-icon:hover {
   color: var(--color-teal) !important;
 }
 
-/* Tab panel content */
-[role="tabpanel"] {
+/* Tab panel content - scoped */
+.sfli-panel-main-container [role="tabpanel"] {
   flex: 1 !important;
   padding: var(--spacing-md) !important;
   overflow-y: auto !important;
@@ -782,24 +780,27 @@ main::-webkit-scrollbar-thumb:hover,
    SECTION 12: LINK & SELECTION STYLES
    ============================================================================ */
 
-a {
+/* Links - scoped to ADT agent container to avoid breaking other panels */
+.sfli-agent-container a,
+.adp-theme .sfli-panel-main-container a {
   color: var(--color-teal) !important;
   text-decoration: none !important;
   transition: color 0.2s ease !important;
 }
 
-a:hover {
+.sfli-agent-container a:hover,
+.adp-theme .sfli-panel-main-container a:hover {
   color: var(--color-navy-dark) !important;
   text-decoration: underline !important;
 }
 
-/* Text selection styling */
-::selection {
+/* Text selection styling - scoped */
+.sfli-agent-container ::selection {
   background-color: var(--color-teal) !important;
   color: var(--color-white) !important;
 }
 
-::-moz-selection {
+.sfli-agent-container ::-moz-selection {
   background-color: var(--color-teal) !important;
   color: var(--color-white) !important;
 }
@@ -808,12 +809,13 @@ a:hover {
    SECTION 13: BUTTON BASE RESET
    ============================================================================ */
 
-button {
+/* Button base - scoped to ADT agent container */
+.sfli-agent-container button {
   font-family: var(--font-family-primary) !important;
   transition: all 0.2s ease !important;
 }
 
-button:focus {
+.sfli-agent-container button:focus {
   outline: 2px solid var(--color-teal) !important;
   outline-offset: 2px !important;
 }
